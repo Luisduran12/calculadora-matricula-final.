@@ -81,12 +81,6 @@ def apply_custom_css():
             border-radius: 10px !important;
             margin-top: 15px;
         }
-        .stSuccess {
-            background-color: #e6ffe6;
-            border-left: 5px solid #4CAF50;
-            padding: 10px;
-            margin-bottom: 15px;
-        }
         .stTotalCreditos {
             font-size: 24px;
             font-weight: bold;
@@ -159,38 +153,16 @@ def main_app():
 
     st.markdown("---")
 
-    # ✅ BOTÓN ARRIBA
+    # ✅ BOTÓN
     deducir = st.button("Deducir Distribución de Créditos")
 
-    # ✅ AQUÍ VA (DEBAJO DEL BOTÓN) "Valores Fijos y de Referencia por Año"
-    st.subheader("Valores Fijos y de Referencia por Año")
-    st.info(f"**Año:** {ano} | **Tipo de Estudio:** {tipo_estudio.capitalize()}")
-
-    if tipo_estudio in ["pregrado", "tecnologia"] and len(valores_credito) == 2:
-        st.write(f"🏷️ **Crédito Ordinario:** ${valores_credito[0]:,}")
-        st.write(f"**Crédito Extraordinario:** ${valores_credito[1]:,}")
-    elif len(valores_credito) >= 1 and valores_credito[0] > 0:
-        st.write(f"🏷️ **Valor de Crédito único:** ${valores_credito[0]:,}")
-    else:
-        st.warning("El valor del crédito es 0 o no está definido. No se puede calcular.")
-        return
-
-    if valor_inscripcion > 0:
-        st.write(f"📝 **Costo de Inscripción ({tipo_estudio.capitalize()}):** ${valor_inscripcion:,}")
-    else:
-        st.write(f"📝 **Costo de Inscripción ({tipo_estudio.capitalize()}):** No definido en la tabla para este año/tipo.")
-
-    st.write(f"🛡️ **Costo del Seguro (Fijo):** ${valor_seguro:,}")
-
-    st.markdown("---")
-
     # --- Calculation Logic ---
+    solucion_encontrada = False
+    detalle_creditos = ""
+    total_creditos_deducidos = 0
+
     if deducir:
         costo_total_creditos = valor_creditos_neto
-        solucion_encontrada = False
-
-        detalle_creditos = ""
-        total_creditos_deducidos = 0
 
         # Case 1: Two Credit Types (Pregrado/Tecnologia)
         if tipo_estudio in ["pregrado", "tecnologia"] and len(valores_credito) == 2:
@@ -208,13 +180,11 @@ def main_app():
 
                 if resto % v1 == 0:
                     y = resto // v1
-
                     if y == int(y):
                         creditos_v1 = int(y)
                         creditos_v2 = x
 
                         total_creditos_deducidos = creditos_v1 + creditos_v2
-
                         detalle_creditos = f"""
 - **{creditos_v1}** créditos a **${v1:,}** cada uno (Total: ${v1 * creditos_v1:,})
 - **{creditos_v2}** créditos a **${v2:,}** cada uno (Total: ${v2 * creditos_v2:,})
@@ -231,13 +201,11 @@ def main_app():
         # Case 2: Single Credit Type
         elif len(valores_credito) >= 1 and valores_credito[0] > 0:
             v1 = valores_credito[0]
+            costo_total_creditos = valor_creditos_neto
 
             if costo_total_creditos % v1 == 0:
                 total_creditos_deducidos = costo_total_creditos // v1
-                detalle_creditos = (
-                    f"- **{total_creditos_deducidos}** créditos a **${v1:,}** cada uno "
-                    f"(Total: ${costo_total_creditos:,})"
-                )
+                detalle_creditos = f"- **{total_creditos_deducidos}** créditos a **${v1:,}** cada uno (Total: ${costo_total_creditos:,})"
                 solucion_encontrada = True
             else:
                 creditos_calculados = costo_total_creditos / v1
@@ -245,21 +213,49 @@ def main_app():
 ❌ El valor neto (${costo_total_creditos:,}) no corresponde a un número entero válido de créditos a ${v1:,} cada uno.
 - El cálculo arroja **{creditos_calculados:,.2f}** créditos.
 """)
+        else:
+            st.warning("El valor del crédito es 0 o no está definido. No se puede calcular.")
 
-        # --- Final Results Display ---
+        # --- Results (solo si hay solución) ---
         if solucion_encontrada:
             st.subheader("✅ Distribución de Créditos Deducida ✅")
-
             st.markdown("#### Detalle de la Distribución:")
             st.markdown(f"**Total de Créditos Deducidos:** **{total_creditos_deducidos}**")
             st.markdown(detalle_creditos)
-
             st.markdown("---")
 
-            st.markdown(
-                f'<div class="stTotalCreditos">COSTO NETO TOTAL DE CRÉDITOS: ${costo_total_creditos:,}</div>',
-                unsafe_allow_html=True,
-            )
+    # ==============================================================================
+    # ✅ ESTO QUEDA SIEMPRE AL FINAL (ULTIMO EN PANTALLA)
+    # 1) TOTAL NETO
+    # 2) VALORES FIJOS Y REFERENCIA
+    # ==============================================================================
+
+    costo_total_creditos = valor_creditos_neto
+
+    st.markdown(
+        f'<div class="stTotalCreditos">COSTO NETO TOTAL DE CRÉDITOS: ${costo_total_creditos:,}</div>',
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("---")
+
+    st.subheader("Valores Fijos y de Referencia por Año")
+    st.info(f"**Año:** {ano} | **Tipo de Estudio:** {tipo_estudio.capitalize()}")
+
+    if tipo_estudio in ["pregrado", "tecnologia"] and len(valores_credito) == 2:
+        st.write(f"🏷️ **Crédito Ordinario:** ${valores_credito[0]:,}")
+        st.write(f"**Crédito Extraordinario:** ${valores_credito[1]:,}")
+    elif len(valores_credito) >= 1 and valores_credito[0] > 0:
+        st.write(f"🏷️ **Valor de Crédito único:** ${valores_credito[0]:,}")
+    else:
+        st.write("🏷️ **Valor de Crédito:** No definido.")
+
+    if valor_inscripcion > 0:
+        st.write(f"📝 **Costo de Inscripción ({tipo_estudio.capitalize()}):** ${valor_inscripcion:,}")
+    else:
+        st.write(f"📝 **Costo de Inscripción ({tipo_estudio.capitalize()}):** No definido en la tabla para este año/tipo.")
+
+    st.write(f"🛡️ **Costo del Seguro (Fijo):** ${valor_seguro:,}")
 
 # ==============================================================================
 # 4. Execution
