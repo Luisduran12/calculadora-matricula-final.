@@ -264,7 +264,7 @@ def main_app():
                 # Se marca como solución encontrada
                 solucion_encontrada = True
 
-            el
+            else:
                 # Si no da entero, se muestra el cálculo decimal
                 creditos_calculados = costo_total_creditos / v1
                 st.error(f"""
