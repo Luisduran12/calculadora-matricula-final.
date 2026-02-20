@@ -5,7 +5,6 @@ import streamlit as st
 # ==============================================================================
 
 # Diccionario con valores de créditos por año y por tipo de estudio
-# Nota: en pregrado/tecnología se manejan 2 valores: [ordinario, extraordinario]
 VALORES_CREDITO = {
     "2006-1": {"pregrado": [43000, 60000], "especializacion": [170000]},
     "2006-2": {"pregrado": [46000, 60000], "especializacion": [170000]},
@@ -301,34 +300,3 @@ def main_app():
 
     # Subtítulo de valores fijos (queda justo debajo del total)
     st.subheader("Valores Fijos y de Referencia por Año")
-
-    # Info del año y tipo seleccionado
-    st.info(f"**Año:** {ano} | **Tipo de Estudio:** {tipo_estudio.capitalize()}")
-
-    # Muestra valores de crédito según el tipo
-    if tipo_estudio in ["pregrado", "tecnologia"] and len(valores_credito) == 2:
-        st.write(f"🏷️ **Crédito Ordinario:** ${valores_credito[0]:,}")
-        st.write(f"**Crédito Extraordinario:** ${valores_credito[1]:,}")
-    elif len(valores_credito) >= 1 and valores_credito[0] > 0:
-        st.write(f"🏷️ **Valor de Crédito único:** ${valores_credito[0]:,}")
-    else:
-        st.write("🏷️ **Valor de Crédito:** No definido.")
-
-    # Muestra inscripción
-    if valor_inscripcion > 0:
-        st.write(f"📝 **Costo de Inscripción ({tipo_estudio.capitalize()}):** ${valor_inscripcion:,}")
-    else:
-        st.write(f"📝 **Costo de Inscripción ({tipo_estudio.capitalize()}):** No definido en la tabla para este año/tipo.")
-
-    # Muestra seguro fijo
-    st.write(f"🛡️ **Costo del Seguro (Fijo):** ${valor_seguro:,}")
-
-
-# ==============================================================================
-# 4) EJECUCIÓN
-# ==============================================================================
-
-if __name__ == "__main__":
-    apply_custom_css()
-    main_app()
-
