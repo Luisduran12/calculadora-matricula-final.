@@ -286,7 +286,6 @@ def main_app():
     # ==============================================================================
     # ✅ BLOQUE FINAL: SIEMPRE SE VE Y QUEDA ABAJO (COMO TU IMAGEN)
     # 1) COSTO NETO TOTAL
-    # 2) VALORES FIJOS Y DE REFERENCIA
     # ==============================================================================
 
     # Caja grande con el costo neto total
@@ -298,5 +297,11 @@ def main_app():
     # Separador
     st.markdown("---")
 
-    # Subtítulo de valores fijos (queda justo debajo del total)
-    st.subheader("Valores Fijos y de Referencia por Año")
+
+# ==============================================================================
+# 4) EJECUCIÓN
+# ==============================================================================
+
+if __name__ == "__main__":
+    apply_custom_css()
+    main_app()
