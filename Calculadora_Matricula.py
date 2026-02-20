@@ -231,9 +231,9 @@ def main_app():
 
                     # Se arma el detalle en pantalla
                     detalle_creditos = f"""
-- **{creditos_v1}** créditos a **${v1:,}** cada uno (Total: ${v1 * creditos_v1:,})
-- **{creditos_v2}** créditos a **${v2:,}** cada uno (Total: ${v2 * creditos_v2:,})
-"""
+   - **{creditos_v1}** créditos a **${v1:,}** cada uno (Total: ${v1 * creditos_v1:,})
+   - **{creditos_v2}** créditos a **${v2:,}** cada uno (Total: ${v2 * creditos_v2:,})
+   """
 
                     # Se marca como encontrada
                     solucion_encontrada = True
@@ -268,9 +268,9 @@ def main_app():
                 # Si no da entero, se muestra el cálculo decimal
                 creditos_calculados = costo_total_creditos / v1
                 st.error(f"""
-❌ El valor neto (${costo_total_creditos:,}) no corresponde a un número entero válido de créditos a ${v1:,} cada uno.
-- El cálculo arroja **{creditos_calculados:,.2f}** créditos.
-""")
+   ❌ El valor neto (${costo_total_creditos:,}) no corresponde a un número entero válido de créditos a ${v1:,} cada uno.
+   - El cálculo arroja **{creditos_calculados:,.2f}** créditos.
+   """)
         else:
             # Si no hay valor definido, se avisa
             st.warning("El valor del crédito es 0 o no está definido. No se puede calcular.")
@@ -283,20 +283,11 @@ def main_app():
             st.markdown(detalle_creditos)
             st.markdown("---")
 
-    # ==============================================================================
-    # ✅ BLOQUE FINAL: SIEMPRE SE VE Y QUEDA ABAJO (COMO TU IMAGEN)
-    # 1) COSTO NETO TOTAL
-    # 2) VALORES FIJOS Y DE REFERENCIA
-    # ==============================================================================
 
-    # Caja grande con el costo neto total
-    st.markdown(
-        f'<div class="stTotalCreditos">COSTO NETO TOTAL DE CRÉDITOS: ${costo_total_creditos:,}</div>',
-        unsafe_allow_html=True,
-    )
+# ==============================================================================
+# 4) EJECUCIÓN
+# ==============================================================================
 
-    # Separador
-    st.markdown("---")
-
-    # Subtítulo de valores fijos (queda justo debajo del total)
-    st.subheader("Valores Fijos y de Referencia por Año")
+if __name__ == "__main__":
+    apply_custom_css()
+    main_app()
