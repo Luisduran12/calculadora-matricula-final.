@@ -106,7 +106,7 @@ def apply_custom_css():
 
 def main_app():
 
-    st.title("Calculadora de Distribución de Créditos 🛠️")
+    st.header("Calculadora de Distribución de Créditos 🛠️")
     st.header("Luis Emir Guerrero Duran")
 
     valor_creditos_neto = st.number_input(
