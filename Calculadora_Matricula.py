@@ -1,6 +1,6 @@
 import streamlit as st
 
-# =============================================================================
+# ==============================================================================
 # 1) DATOS DE CONFIGURACIÓN (TABLAS)
 # ==============================================================================
 
@@ -148,12 +148,14 @@ def main_app():
     valor_inscripcion = VALORES_INSCRIPCION_POR_TIPO.get(ano, {}).get(tipo_estudio_key, 0)
     valor_seguro = VALOR_SEGURO_FIJO
     valores_credito = valores_ano.get(tipo_estudio, [0])
+    costo_total_creditos = valor_creditos_neto
 
     st.markdown("---")
 
-    # Costo neto total — siempre visible
-    costo_total_creditos = valor_creditos_neto
+    # ✅ BOTÓN
+    presiono_boton = st.button("Deducir Distribución de Créditos")
 
+    # ✅ COSTO NETO — debajo del botón
     st.markdown(
         f'<div class="stTotalCreditos">COSTO NETO TOTAL DE CRÉDITOS: ${costo_total_creditos:,}</div>',
         unsafe_allow_html=True,
@@ -161,16 +163,13 @@ def main_app():
 
     st.markdown("---")
 
-    # ✅ BOTÓN — encima de Valores Fijos
-    presiono_boton = st.button("Deducir Distribución de Créditos")
-
     solucion_encontrada = False
     total_creditos_deducidos = 0
     detalle_creditos = ""
 
     if presiono_boton:
 
-        # Caso A: pregrado con 2 tarifas (ordinario y extraordinario)
+        # Caso A: pregrado con 2 tarifas
         if tipo_estudio in ["pregrado"] and len(valores_credito) == 2:
 
             v1, v2 = sorted(valores_credito)
@@ -230,7 +229,7 @@ def main_app():
                     f"que sume el valor neto ingresado (${costo_total_creditos:,})."
                 )
 
-        # Caso C: un solo valor de crédito (especialización, maestría, doctorado, tecnología 2026, etc.)
+        # Caso C: un solo valor de crédito
         elif len(valores_credito) >= 1 and valores_credito[0] > 0:
 
             v1 = valores_credito[0]
@@ -289,7 +288,6 @@ def main_app():
 
     st.markdown(f"🛡 **Costo del Seguro (Fijo):** ${valor_seguro:,}")
 
-    # Nota especial para pregrado 2026
     if ano == "2026" and tipo_estudio == "pregrado":
         st.info(
             "ℹ️ Para 2026, el crédito de **$187,000** aplica a programas de "
