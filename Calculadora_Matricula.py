@@ -155,14 +155,6 @@ def main_app():
     # ✅ BOTÓN
     presiono_boton = st.button("Deducir Distribución de Créditos")
 
-    # ✅ COSTO NETO — debajo del botón
-    st.markdown(
-        f'<div class="stTotalCreditos">COSTO NETO TOTAL DE CRÉDITOS: ${costo_total_creditos:,}</div>',
-        unsafe_allow_html=True,
-    )
-
-    st.markdown("---")
-
     solucion_encontrada = False
     total_creditos_deducidos = 0
     detalle_creditos = ""
@@ -253,6 +245,14 @@ def main_app():
             st.markdown(f"**Total de Créditos Deducidos:** **{total_creditos_deducidos}**")
             st.markdown(detalle_creditos)
             st.markdown("---")
+
+    # ✅ COSTO NETO — siempre visible, debajo de los resultados
+    st.markdown(
+        f'<div class="stTotalCreditos">COSTO NETO TOTAL DE CRÉDITOS: ${costo_total_creditos:,}</div>',
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("---")
 
     # ==============================================================================
     # VALORES FIJOS Y DE REFERENCIA — siempre al final
