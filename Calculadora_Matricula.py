@@ -142,7 +142,7 @@ def mostrar_encabezado():
                         Calculadora de Distribución de Créditos
                     </div>
                     <div style="color:#a0bdd4; font-size:12px; margin-top:3px;">
-                        Luis Emir Guerrero Duran &nbsp;·&nbsp; Monitor de Registro y Control
+                        Monitor de Registro y Control
                     </div>
                 </div>
                 <div style="display:flex; align-items:center;">
@@ -310,7 +310,7 @@ def main_app():
 
     st.markdown("""
         <div style="background:#0d2137; border-radius:10px; padding:10px 20px; display:flex; justify-content:space-between; margin-top:1.5rem;">
-            <span style="color:#a0bdd4; font-size:11px;">UNAD · CCAV Cúcuta · Registro y Control</span>
+            <span style="color:#a0bdd4; font-size:11px;">UNAD · CCAV Cúcuta · Registro y Control · Luis Emir Guerrero Duran</span>
             <span style="color:#C8962A; font-size:11px; font-weight:500;">2026</span>
         </div>
         </div>
