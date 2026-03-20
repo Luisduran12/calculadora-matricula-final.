@@ -309,7 +309,7 @@ def main_app():
         <div style="background:#0d2137; border-radius:10px; padding:10px 20px; display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem;">
             <span style="color:#a0bdd4; font-size:11px;">UNAD · CCAV Cúcuta · Registro y Control</span>
             <span style="color:#a0bdd4; font-size:11px;">Luis Emir Guerrero Duran · Monitor</span>
-            <span style="color:#C8962A; font-size:11px; font-weight:500;">2026</span>
+            <span style="color:#C8962A; font-size:11px; font-weight:500;">2025</span>
         </div
         </div>
     """, unsafe_allow_html=True)
