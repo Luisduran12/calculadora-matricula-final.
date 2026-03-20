@@ -117,16 +117,17 @@ def mostrar_encabezado():
     unad_b64 = img_to_base64("unad.png")
     edunat_b64 = img_to_base64("edunat.png")
 
-    unad_tag = f'<img src="data:image/png;base64,{unad_b64}" style="height:80px; object-fit:contain;">' if unad_b64 else '<div style="width:80px;"></div>'
-    edunat_tag = f'<img src="data:image/png;base64,{edunat_b64}" style="height:80px; object-fit:contain;">' if edunat_b64 else '<div style="width:80px;"></div>'
+    unad_tag = f'<img src="data:image/png;base64,{unad_b64}" style="height:clamp(50px,8vw,80px); object-fit:contain;">'
+    edunat_tag = f'<img src="data:image/png;base64,{edunat_b64}" style="height:clamp(50px,8vw,80px); object-fit:contain;">'
+
 
     st.markdown(f"""
         <div style="background:#0d2137; border-radius:14px 14px 0 0; padding:20px 28px 16px;">
-            <div style="display:flex; align-items:center; justify-content:space-between;">
-                <div style="display:flex; align-items:center;">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                <div style="display:flex; align-items:center; flex-shrink:0;">
                     {unad_tag}
                 </div>
-                <div style="text-align:center; flex:1; padding:0 20px;">
+                <div style="text-align:center; flex:1; min-width:200px; padding:0 10px;">
                     <div style="color:#C8962A; font-size:11px; letter-spacing:2px; text-transform:uppercase; margin-bottom:4px; margin-top:18px;">
                         Universidad Nacional Abierta y a Distancia
                     </div>
