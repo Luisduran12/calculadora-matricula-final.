@@ -1,5 +1,5 @@
 import streamlit as st
-from PIL import Image
+import base64
 import os
 
 # ==============================================================================
@@ -62,37 +62,27 @@ VALOR_SEGURO_FIJO = 9000
 
 
 # ==============================================================================
-# 2) ESTILOS (CSS)
+# 2) FUNCIÓN PARA CONVERTIR IMAGEN A BASE64
+# ==============================================================================
+
+def img_to_base64(path):
+    if os.path.exists(path):
+        with open(path, "rb") as f:
+            return base64.b64encode(f.read()).decode()
+    return None
+
+
+# ==============================================================================
+# 3) ESTILOS CSS
 # ==============================================================================
 
 def apply_custom_css():
     st.markdown("""
         <style>
         .block-container {
-            max-width: 680px;
+            max-width: 700px;
             margin: auto;
-            padding-top: 0rem;
-        }
-        .header-institucional {
-            background: #0d2137;
-            border-radius: 14px 14px 0 0;
-            padding: 0;
-            margin-bottom: 0;
-        }
-        .franja-dorada {
-            height: 5px;
-            background: linear-gradient(to right, #C8962A, #E8670A, #C8962A);
-        }
-        .stTotalCreditos {
-            font-size: 13px;
-            font-weight: 600;
-            color: #854F0B;
-            padding: 14px 18px;
-            background: #fffbf0;
-            border-left: 4px solid #C8962A;
-            border-radius: 0 10px 10px 0;
-            margin-top: 10px;
-            margin-bottom: 10px;
+            padding-top: 1rem;
         }
         input[type="number"] {
             font-size: 20px !important;
@@ -101,10 +91,7 @@ def apply_custom_css():
             border: 2px solid #C8962A !important;
             border-radius: 10px !important;
         }
-        .stSelectbox > div > div {
-            border-radius: 10px !important;
-        }
-        button[kind="primary"], .stButton > button {
+        .stButton > button {
             background-color: #0d2137 !important;
             color: white !important;
             font-size: 16px !important;
@@ -112,78 +99,68 @@ def apply_custom_css():
             border-radius: 10px !important;
             border: none !important;
             padding: 12px 24px !important;
-            letter-spacing: 0.5px !important;
             width: 100% !important;
+            margin-top: 5px;
         }
-        .footer-institucional {
-            background: #0d2137;
-            border-radius: 0 0 14px 14px;
-            padding: 8px 20px;
-            display: flex;
-            justify-content: space-between;
-            margin-top: 1rem;
+        .stButton > button:hover {
+            background-color: #1a3a5c !important;
         }
         </style>
     """, unsafe_allow_html=True)
 
 
 # ==============================================================================
-# 3) ENCABEZADO INSTITUCIONAL
+# 4) ENCABEZADO INSTITUCIONAL COMPLETO EN HTML
 # ==============================================================================
 
 def mostrar_encabezado():
-    col1, col2, col3 = st.columns([1, 3, 1])
+    unad_b64 = img_to_base64("unad.png")
+    edunat_b64 = img_to_base64("edunat.png")
 
-    with col1:
-        if os.path.exists("unad.png"):
-            img = Image.open("unad.png")
-            st.image(img, width=90)
+    unad_tag = f'<img src="data:image/png;base64,{unad_b64}" style="height:80px; object-fit:contain;">' if unad_b64 else '<div style="width:80px;"></div>'
+    edunat_tag = f'<img src="data:image/png;base64,{edunat_b64}" style="height:80px; object-fit:contain;">' if edunat_b64 else '<div style="width:80px;"></div>'
 
-    with col2:
-        st.markdown("""
-            <div style="text-align:center; padding: 8px 0;">
-                <div style="color:#C8962A; font-size:11px; letter-spacing:2px; text-transform:uppercase; margin-bottom:3px;">
-                    Universidad Nacional Abierta y a Distancia
+    st.markdown(f"""
+        <div style="background:#0d2137; border-radius:14px 14px 0 0; padding:20px 28px 16px;">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <div style="display:flex; align-items:center;">
+                    {unad_tag}
                 </div>
-                <div style="color:white; font-size:20px; font-weight:500; line-height:1.2;">
-                    CCAV Cúcuta
+                <div style="text-align:center; flex:1; padding:0 20px;">
+                    <div style="color:#C8962A; font-size:11px; letter-spacing:2px; text-transform:uppercase; margin-bottom:4px;">
+                        Universidad Nacional Abierta y a Distancia
+                    </div>
+                    <div style="color:white; font-size:22px; font-weight:500; line-height:1.2;">
+                        CCAV Cúcuta
+                    </div>
+                    <div style="color:#a0bdd4; font-size:12px; letter-spacing:1px; margin-top:2px;">
+                        Registro y Control
+                    </div>
+                    <div style="height:2px; background:linear-gradient(to right,transparent,#C8962A,transparent); margin:8px auto; width:70%;"></div>
+                    <div style="color:white; font-size:15px; font-weight:400;">
+                        Calculadora de Distribución de Créditos
+                    </div>
+                    <div style="color:#a0bdd4; font-size:12px; margin-top:3px;">
+                        Luis Emir Guerrero Duran &nbsp;·&nbsp; Asesor Académico
+                    </div>
                 </div>
-                <div style="color:#a0bdd4; font-size:12px; letter-spacing:1px; margin-top:2px;">
-                    Registro y Control
-                </div>
-                <div style="height:2px; background:linear-gradient(to right,transparent,#C8962A,transparent); margin:8px auto; width:80%;"></div>
-                <div style="color:white; font-size:16px; font-weight:400;">
-                    Calculadora de Distribución de Créditos
-                </div>
-                <div style="color:#a0bdd4; font-size:12px; margin-top:2px;">
-                    Luis Emir Guerrero Duran &nbsp;·&nbsp; Asesor Académico
+                <div style="display:flex; align-items:center;">
+                    {edunat_tag}
                 </div>
             </div>
-        """, unsafe_allow_html=True)
-
-    with col3:
-        if os.path.exists("edunat.png"):
-            img2 = Image.open("edunat.png")
-            st.image(img2, width=90)
-
-    st.markdown('<div class="franja-dorada"></div>', unsafe_allow_html=True)
+        </div>
+        <div style="height:5px; background:linear-gradient(to right,#C8962A,#E8670A,#C8962A); margin-bottom:0;"></div>
+        <div style="background:white; border:1px solid #C8962A; border-top:none; border-radius:0 0 14px 14px; padding:24px;">
+    """, unsafe_allow_html=True)
 
 
 # ==============================================================================
-# 4) APLICACIÓN PRINCIPAL
+# 5) APLICACIÓN PRINCIPAL
 # ==============================================================================
 
 def main_app():
 
-    st.markdown("""
-        <div style="background:#0d2137; border-radius:14px 14px 0 0; padding:16px 20px 0;">
-    """, unsafe_allow_html=True)
-
     mostrar_encabezado()
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown('<div style="background:var(--background-color); padding:20px; border:0.5px solid #C8962A; border-top:none; border-radius:0 0 14px 14px;">', unsafe_allow_html=True)
 
     valor_creditos_neto = st.number_input(
         "Valor NETO de los Créditos ($)",
@@ -193,10 +170,9 @@ def main_app():
         help="Ingrese el costo total que cubren solo los créditos académicos."
     )
 
-    opciones_anos = list(VALORES_CREDITO.keys())
     col_a, col_b = st.columns(2)
     with col_a:
-        ano = st.selectbox("Año de la matrícula", options=opciones_anos)
+        ano = st.selectbox("Año de la matrícula", options=list(VALORES_CREDITO.keys()))
     with col_b:
         valores_ano = VALORES_CREDITO.get(ano, {})
         tipos_disponibles = sorted([
@@ -224,31 +200,34 @@ def main_app():
 
     solucion_encontrada = False
     total_creditos_deducidos = 0
-    detalle_creditos = ""
+    detalle_line1 = ""
+    detalle_line2 = ""
 
     if presiono_boton:
 
         if tipo_estudio in ["pregrado"] and len(valores_credito) == 2:
             v1, v2 = sorted(valores_credito)
-            for x in range(min(int(costo_total_creditos / v2) + 1, 31)):
+            for x in range(min(int(costo_total_creditos / v2) + 1 if v2 > 0 else 1, 31)):
                 resto = costo_total_creditos - v2 * x
                 if resto >= 0 and resto % v1 == 0:
-                    creditos_v1, creditos_v2 = int(resto // v1), int(x)
-                    total_creditos_deducidos = creditos_v1 + creditos_v2
-                    detalle_creditos = f"- **{creditos_v1}** créditos ordinarios a **${v1:,}** (Total: ${v1*creditos_v1:,})\n- **{creditos_v2}** créditos extraordinarios a **${v2:,}** (Total: ${v2*creditos_v2:,})"
+                    c1, c2 = int(resto // v1), int(x)
+                    total_creditos_deducidos = c1 + c2
+                    detalle_line1 = f"{c1} créditos ordinarios × ${v1:,} = ${v1*c1:,}"
+                    detalle_line2 = f"{c2} créditos extraordinarios × ${v2:,} = ${v2*c2:,}"
                     solucion_encontrada = True
                     break
             if not solucion_encontrada:
-                st.error(f"❌ No existe combinación exacta de créditos de **${v1:,}** y **${v2:,}** para ${costo_total_creditos:,}.")
+                st.error(f"❌ No existe combinación exacta para ${costo_total_creditos:,}.")
 
         elif tipo_estudio == "tecnologia" and len(valores_credito) == 2:
             v1, v2 = sorted(valores_credito)
-            for x in range(min(int(costo_total_creditos / v2) + 1, 31)):
+            for x in range(min(int(costo_total_creditos / v2) + 1 if v2 > 0 else 1, 31)):
                 resto = costo_total_creditos - v2 * x
                 if resto >= 0 and resto % v1 == 0:
-                    creditos_v1, creditos_v2 = int(resto // v1), int(x)
-                    total_creditos_deducidos = creditos_v1 + creditos_v2
-                    detalle_creditos = f"- **{creditos_v1}** créditos a **${v1:,}** (Total: ${v1*creditos_v1:,})\n- **{creditos_v2}** créditos a **${v2:,}** (Total: ${v2*creditos_v2:,})"
+                    c1, c2 = int(resto // v1), int(x)
+                    total_creditos_deducidos = c1 + c2
+                    detalle_line1 = f"{c1} créditos × ${v1:,} = ${v1*c1:,}"
+                    detalle_line2 = f"{c2} créditos × ${v2:,} = ${v2*c2:,}"
                     solucion_encontrada = True
                     break
             if not solucion_encontrada:
@@ -258,88 +237,87 @@ def main_app():
             v1 = valores_credito[0]
             if costo_total_creditos % v1 == 0:
                 total_creditos_deducidos = costo_total_creditos // v1
-                detalle_creditos = f"- **{total_creditos_deducidos}** créditos a **${v1:,}** cada uno (Total: ${costo_total_creditos:,})"
+                detalle_line1 = f"{total_creditos_deducidos} créditos × ${v1:,} = ${costo_total_creditos:,}"
                 solucion_encontrada = True
             else:
-                st.error(f"❌ El valor neto (${costo_total_creditos:,}) no corresponde a un número entero de créditos a ${v1:,}. Resultado: {costo_total_creditos/v1:,.2f} créditos.")
+                st.error(f"❌ ${costo_total_creditos:,} no corresponde a un número entero de créditos a ${v1:,}. Resultado: {costo_total_creditos/v1:,.2f} créditos.")
         else:
             st.warning("El valor del crédito es 0 o no está definido.")
 
         if solucion_encontrada:
             st.markdown(f"""
-                <div style="background:#f0faf6; border-left:4px solid #1D9E75; border-radius:0 10px 10px 0; padding:14px 18px; margin:12px 0; display:flex; justify-content:space-between; align-items:center;">
+                <div style="background:#f0faf6; border-left:4px solid #1D9E75; border-radius:0 10px 10px 0; padding:16px 20px; margin:12px 0; display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <div style="font-size:11px; font-weight:600; color:#085041; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">✅ Distribución Deducida</div>
-                        <div style="font-size:13px; color:#0F6E56;">{detalle_creditos.replace("**","").replace("- ","")}</div>
+                        <div style="font-size:11px; font-weight:600; color:#085041; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">✅ Distribución Deducida</div>
+                        <div style="font-size:14px; color:#0F6E56; margin-bottom:3px;">{detalle_line1}</div>
+                        <div style="font-size:14px; color:#1D9E75;">{detalle_line2}</div>
                     </div>
-                    <div style="text-align:right;">
-                        <div style="font-size:11px; color:#085041; text-transform:uppercase; letter-spacing:1px;">Créditos</div>
-                        <div style="font-size:36px; font-weight:500; color:#0d2137;">{total_creditos_deducidos}</div>
+                    <div style="text-align:center; padding-left:20px; border-left:1px solid #9FE1CB;">
+                        <div style="font-size:11px; color:#085041; text-transform:uppercase; letter-spacing:1px;">Total</div>
+                        <div style="font-size:42px; font-weight:500; color:#0d2137; line-height:1;">{total_creditos_deducidos}</div>
+                        <div style="font-size:11px; color:#085041;">créditos</div>
                     </div>
                 </div>
             """, unsafe_allow_html=True)
             st.markdown("---")
 
-    st.markdown(
-        f'<div class="stTotalCreditos">COSTO NETO TOTAL DE CRÉDITOS &nbsp;·&nbsp; <span style="font-size:22px; color:#633806;">${costo_total_creditos:,}</span></div>',
-        unsafe_allow_html=True,
-    )
+    st.markdown(f"""
+        <div style="background:#fffbf0; border-left:4px solid #C8962A; border-radius:0 10px 10px 0; padding:14px 20px; margin:12px 0; display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-size:11px; font-weight:600; color:#854F0B; text-transform:uppercase; letter-spacing:1px;">Costo Neto Total de Créditos</div>
+            <div style="font-size:26px; font-weight:500; color:#633806;">${costo_total_creditos:,}</div>
+        </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("---")
 
+    # Valores de referencia
     st.markdown(f"""
-        <div style="border:0.5px solid #e0e0e0; border-radius:10px; overflow:hidden; margin-top:8px;">
+        <div style="border:0.5px solid #ddd; border-radius:10px; overflow:hidden;">
             <div style="background:#0d2137; padding:10px 16px; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:12px; font-weight:500; color:#C8962A; text-transform:uppercase; letter-spacing:1px;">Valores de Referencia</span>
+                <span style="font-size:12px; font-weight:600; color:#C8962A; text-transform:uppercase; letter-spacing:1px;">Valores de Referencia</span>
                 <span style="font-size:12px; color:#a0bdd4;">{ano} · {tipo_estudio.capitalize()}</span>
             </div>
-            <div style="padding:14px 16px; display:flex; flex-direction:column; gap:10px;">
+            <div style="padding:14px 16px;">
     """, unsafe_allow_html=True)
 
+    filas = []
     if tipo_estudio == "pregrado" and len(valores_credito) == 2:
         v1, v2 = sorted(valores_credito)
-        st.markdown(f"""
-            <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:gray;">🪙 Crédito ordinario</span><span style="font-weight:500;background:#f5f5f5;padding:3px 10px;border-radius:20px;">${v1:,}</span></div>
-            <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:gray;">🪙 Crédito extraordinario (+10%)</span><span style="font-weight:500;background:#f5f5f5;padding:3px 10px;border-radius:20px;">${v2:,}</span></div>
-        """, unsafe_allow_html=True)
+        filas = [("🪙 Crédito ordinario", f"${v1:,}"), ("🪙 Crédito extraordinario (+10%)", f"${v2:,}")]
     elif tipo_estudio == "tecnologia" and len(valores_credito) == 2:
         v1, v2 = sorted(valores_credito)
-        st.markdown(f"""
-            <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:gray;">🪙 Crédito ordinario</span><span style="font-weight:500;background:#f5f5f5;padding:3px 10px;border-radius:20px;">${v1:,}</span></div>
-            <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:gray;">🪙 Crédito extraordinario</span><span style="font-weight:500;background:#f5f5f5;padding:3px 10px;border-radius:20px;">${v2:,}</span></div>
-        """, unsafe_allow_html=True)
+        filas = [("🪙 Crédito ordinario", f"${v1:,}"), ("🪙 Crédito extraordinario", f"${v2:,}")]
     elif len(valores_credito) >= 1:
-        st.markdown(f"""
-            <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:gray;">🪙 Valor del crédito</span><span style="font-weight:500;background:#f5f5f5;padding:3px 10px;border-radius:20px;">${valores_credito[0]:,}</span></div>
-        """, unsafe_allow_html=True)
+        filas = [("🪙 Valor del crédito", f"${valores_credito[0]:,}")]
 
     if valor_inscripcion > 0:
+        filas.append((f"📄 Inscripción ({tipo_estudio_key.capitalize()})", f"${valor_inscripcion:,}"))
+    filas.append(("🛡 Seguro (fijo)", f"${valor_seguro:,}"))
+
+    for label, valor in filas:
         st.markdown(f"""
-            <div style="height:0.5px;background:#eee;margin:4px 0;"></div>
-            <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:gray;">📄 Inscripción ({tipo_estudio_key.capitalize()})</span><span style="font-weight:500;background:#f5f5f5;padding:3px 10px;border-radius:20px;">${valor_inscripcion:,}</span></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; padding:6px 0; border-bottom:0.5px solid #f0f0f0;">
+                <span style="color:#555;">{label}</span>
+                <span style="font-weight:500; background:#f5f5f5; padding:3px 12px; border-radius:20px; color:#222;">{valor}</span>
+            </div>
         """, unsafe_allow_html=True)
 
-    st.markdown(f"""
-            <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:gray;">🛡 Seguro (fijo)</span><span style="font-weight:500;background:#f5f5f5;padding:3px 10px;border-radius:20px;">${valor_seguro:,}</span></div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("</div></div>", unsafe_allow_html=True)
 
     if ano == "2026" and tipo_estudio == "pregrado":
         st.info("ℹ️ El crédito de **$187,000** aplica a Ciencias de la Salud, Ciencias Básicas, Ingeniería, Tecnología y Ciencias Agrícolas (+10%).")
 
     st.markdown("""
-        <div style="background:#0d2137; border-radius:0 0 14px 14px; padding:8px 20px; display:flex; justify-content:space-between; margin-top:1.5rem;">
+        <div style="background:#0d2137; border-radius:10px; padding:10px 20px; display:flex; justify-content:space-between; margin-top:1.5rem;">
             <span style="color:#a0bdd4; font-size:11px;">UNAD · CCAV Cúcuta · Registro y Control</span>
             <span style="color:#C8962A; font-size:11px; font-weight:500;">2026</span>
         </div>
+        </div>
     """, unsafe_allow_html=True)
-
-    st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ==============================================================================
-# 5) PUNTO DE ENTRADA
+# 6) PUNTO DE ENTRADA
 # ==============================================================================
 
 apply_custom_css()
