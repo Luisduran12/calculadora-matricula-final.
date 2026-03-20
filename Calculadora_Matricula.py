@@ -134,9 +134,6 @@ def mostrar_encabezado():
                     <div style="color:white; font-size:22px; font-weight:500; line-height:1.2;">
                         CCAV Cúcuta
                     </div>
-                    <div style="color:#a0bdd4; font-size:12px; letter-spacing:1px; margin-top:2px;">
-                        Registro y Control
-                    </div>
                     <div style="height:2px; background:linear-gradient(to right,transparent,#C8962A,transparent); margin:8px auto; width:70%;"></div>
                     <div style="color:white; font-size:15px; font-weight:400;">
                         Calculadora de Distribución de Créditos
