@@ -127,7 +127,7 @@ def mostrar_encabezado():
                     {unad_tag}
                 </div>
                 <div style="text-align:center; flex:1; padding:0 20px;">
-                    <div style="color:#C8962A; font-size:11px; letter-spacing:2px; text-transform:uppercase; margin-bottom:4px;">
+                    <div style="color:#C8962A; font-size:11px; letter-spacing:2px; text-transform:uppercase; margin-bottom:4px; margin-top:18px;">
                         Universidad Nacional Abierta y a Distancia
                     </div>
                     <div style="color:white; font-size:22px; font-weight:500; line-height:1.2;">
@@ -141,7 +141,7 @@ def mostrar_encabezado():
                         Calculadora de Distribución de Créditos
                     </div>
                     <div style="color:#a0bdd4; font-size:12px; margin-top:3px;">
-                        Luis Emir Guerrero Duran &nbsp;·&nbsp; Asesor Académico
+                        Luis Emir Guerrero Duran &nbsp;·&nbsp; Monitor de Registro y Control
                     </div>
                 </div>
                 <div style="display:flex; align-items:center;">
