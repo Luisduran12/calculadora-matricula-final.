@@ -29,7 +29,7 @@ VALORES_CREDITO = {
     "2023": {"pregrado": [123000, 135000], "tecnologia": [110000, 121000], "especializacion": [462000], "maestria": [715000], "homologacion": [35000]},
     "2024": {"pregrado": [146000, 160000], "tecnologia": [130000, 143000], "especializacion": [462000], "maestria": [715000], "homologacion": [39000]},
     "2025": {"pregrado": [159000, 175000], "tecnologia": [142000, 157000], "especializacion": [598000], "maestria": [925000], "homologacion": [43000]},
-    "2026": {"pregrado": [170000, 187000], "tecnologia": [152000], "especializacion": [598000], "maestria": [925000], "doctorado": [1032000]},
+    "2026": {"pregrado": [170000, 187000, 196000], "tecnologia": [152000], "especializacion": [598000], "maestria": [925000], "doctorado": [1032000]},
 }
 
 VALORES_INSCRIPCION_POR_TIPO = {
