@@ -60,7 +60,6 @@ VALORES_INSCRIPCION_POR_TIPO = {
 
 VALOR_SEGURO_FIJO = 9000
 
-
 # ==============================================================================
 # 2) FUNCIÓN PARA CONVERTIR IMAGEN A BASE64
 # ==============================================================================
@@ -70,7 +69,6 @@ def img_to_base64(path):
         with open(path, "rb") as f:
             return base64.b64encode(f.read()).decode()
     return None
-
 
 # ==============================================================================
 # 3) ESTILOS CSS
@@ -108,18 +106,16 @@ def apply_custom_css():
         </style>
     """, unsafe_allow_html=True)
 
-
 # ==============================================================================
-# 4) ENCABEZADO INSTITUCIONAL COMPLETO EN HTML
+# 4) ENCABEZADO INSTITUCIONAL
 # ==============================================================================
 
 def mostrar_encabezado():
     unad_b64 = img_to_base64("unad.png")
     edunat_b64 = img_to_base64("edunat.png")
 
-    unad_tag = f'<img src="data:image/png;base64,{unad_b64}" style="height:clamp(50px,8vw,80px); object-fit:contain;">'
-    edunat_tag = f'<img src="data:image/png;base64,{edunat_b64}" style="height:clamp(50px,8vw,80px); object-fit:contain;">'
-
+    unad_tag = f'<img src="data:image/png;base64,{unad_b64}" style="height:clamp(50px,8vw,80px); object-fit:contain;">' if unad_b64 else ""
+    edunat_tag = f'<img src="data:image/png;base64,{edunat_b64}" style="height:clamp(50px,8vw,80px); object-fit:contain;">' if edunat_b64 else ""
 
     st.markdown(f"""
         <div style="background:#0d2137; border-radius:14px 14px 0 0; padding:20px 28px 16px;">
@@ -151,13 +147,11 @@ def mostrar_encabezado():
         <div style="background:white; border:1px solid #C8962A; border-top:none; border-radius:0 0 14px 14px; padding:24px;">
     """, unsafe_allow_html=True)
 
-
 # ==============================================================================
 # 5) APLICACIÓN PRINCIPAL
 # ==============================================================================
 
 def main_app():
-
     mostrar_encabezado()
 
     valor_creditos_neto = st.number_input(
@@ -177,9 +171,11 @@ def main_app():
             t for t in ["pregrado", "tecnologia", "especializacion", "maestria", "doctorado", "homologacion"]
             if t in valores_ano and isinstance(valores_ano[t], list) and len(valores_ano[t]) > 0 and valores_ano[t][0] > 0
         ])
+        
         if not tipos_disponibles:
             st.error(f"❌ No hay tipos definidos para {ano}.")
             return
+        
         try:
             default_index = tipos_disponibles.index("pregrado")
         except ValueError:
@@ -202,11 +198,11 @@ def main_app():
     detalle_line2 = ""
 
     if presiono_boton:
-        # INICIO DEL BLOQUE ACTUALIZADO
+        # BLOQUE DE LÓGICA DE CÁLCULO MEJORADO
         if (tipo_estudio in ["pregrado", "tecnologia"]) and len(valores_credito) >= 2:
             valores_sorted = sorted(valores_credito)
 
-            # Caso 1: precio único exacto (ej. todos los créditos al mismo valor)
+            # Caso 1: precio único exacto
             for v in valores_sorted:
                 if v > 0 and costo_total_creditos % v == 0:
                     n = costo_total_creditos // v
@@ -222,10 +218,10 @@ def main_app():
                     solucion_encontrada = True
                     break
 
-            # Caso 2: combinación de dos precios
+            # Caso 2: combinación de dos precios (rango aumentado a 100 créditos)
             if not solucion_encontrada and len(valores_sorted) >= 2:
                 v1, v2 = valores_sorted[0], valores_sorted[1]
-                for x in range(min(int(costo_total_creditos / v2) + 1 if v2 > 0 else 1, 31)):
+                for x in range(min(int(costo_total_creditos / v2) + 1 if v2 > 0 else 1, 101)):
                     resto = costo_total_creditos - v2 * x
                     if resto >= 0 and resto % v1 == 0:
                         c1, c2 = int(resto // v1), int(x)
@@ -235,10 +231,10 @@ def main_app():
                         solucion_encontrada = True
                         break
 
-            # Caso 3: combinación con el tercer precio (si existe)
+            # Caso 3: combinación con el tercer precio (rango aumentado)
             if not solucion_encontrada and len(valores_sorted) >= 3:
                 v1, v3 = valores_sorted[0], valores_sorted[2]
-                for x in range(min(int(costo_total_creditos / v3) + 1 if v3 > 0 else 1, 31)):
+                for x in range(min(int(costo_total_creditos / v3) + 1 if v3 > 0 else 1, 101)):
                     resto = costo_total_creditos - v3 * x
                     if resto >= 0 and resto % v1 == 0:
                         c1, c3 = int(resto // v1), int(x)
@@ -250,7 +246,6 @@ def main_app():
 
             if not solucion_encontrada:
                 st.error(f"❌ No existe combinación exacta para ${costo_total_creditos:,}.")
-        # FIN DEL BLOQUE ACTUALIZADO
 
         elif len(valores_credito) >= 1 and valores_credito[0] > 0:
             v1 = valores_credito[0]
@@ -259,7 +254,7 @@ def main_app():
                 detalle_line1 = f"{total_creditos_deducidos} créditos × ${v1:,} = ${costo_total_creditos:,}"
                 solucion_encontrada = True
             else:
-                st.error(f"❌ ${costo_total_creditos:,} no corresponde a un número entero de créditos a ${v1:,}. Resultado: {costo_total_creditos/v1:,.2f} créditos.")
+                st.error(f"❌ ${costo_total_creditos:,} no corresponde a un número entero de créditos a ${v1:,}.")
         else:
             st.warning("El valor del crédito es 0 o no está definido.")
 
