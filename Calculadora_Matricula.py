@@ -202,34 +202,55 @@ def main_app():
     detalle_line2 = ""
 
     if presiono_boton:
+        # INICIO DEL BLOQUE ACTUALIZADO
+        if (tipo_estudio in ["pregrado", "tecnologia"]) and len(valores_credito) >= 2:
+            valores_sorted = sorted(valores_credito)
 
-        if tipo_estudio in ["pregrado"] and len(valores_credito) == 2:
-            v1, v2 = sorted(valores_credito)
-            for x in range(min(int(costo_total_creditos / v2) + 1 if v2 > 0 else 1, 31)):
-                resto = costo_total_creditos - v2 * x
-                if resto >= 0 and resto % v1 == 0:
-                    c1, c2 = int(resto // v1), int(x)
-                    total_creditos_deducidos = c1 + c2
-                    detalle_line1 = f"{c1} créditos ordinarios × ${v1:,} = ${v1*c1:,}"
-                    detalle_line2 = f"{c2} créditos extraordinarios × ${v2:,} = ${v2*c2:,}"
+            # Caso 1: precio único exacto (ej. todos los créditos al mismo valor)
+            for v in valores_sorted:
+                if v > 0 and costo_total_creditos % v == 0:
+                    n = costo_total_creditos // v
+                    total_creditos_deducidos = n
+                    etiquetas = {
+                        valores_sorted[0]: "ordinarios",
+                        valores_sorted[1] if len(valores_sorted) > 1 else None: "extraordinarios (+10%)",
+                        valores_sorted[2] if len(valores_sorted) > 2 else None: "extraordinarios (+20%)",
+                    }
+                    etiqueta = etiquetas.get(v, "")
+                    detalle_line1 = f"{n} créditos {etiqueta} × ${v:,} = ${v*n:,}"
+                    detalle_line2 = ""
                     solucion_encontrada = True
                     break
-            if not solucion_encontrada:
-                st.error(f"❌ No existe combinación exacta para ${costo_total_creditos:,}.")
 
-        elif tipo_estudio == "tecnologia" and len(valores_credito) == 2:
-            v1, v2 = sorted(valores_credito)
-            for x in range(min(int(costo_total_creditos / v2) + 1 if v2 > 0 else 1, 31)):
-                resto = costo_total_creditos - v2 * x
-                if resto >= 0 and resto % v1 == 0:
-                    c1, c2 = int(resto // v1), int(x)
-                    total_creditos_deducidos = c1 + c2
-                    detalle_line1 = f"{c1} créditos × ${v1:,} = ${v1*c1:,}"
-                    detalle_line2 = f"{c2} créditos × ${v2:,} = ${v2*c2:,}"
-                    solucion_encontrada = True
-                    break
+            # Caso 2: combinación de dos precios
+            if not solucion_encontrada and len(valores_sorted) >= 2:
+                v1, v2 = valores_sorted[0], valores_sorted[1]
+                for x in range(min(int(costo_total_creditos / v2) + 1 if v2 > 0 else 1, 31)):
+                    resto = costo_total_creditos - v2 * x
+                    if resto >= 0 and resto % v1 == 0:
+                        c1, c2 = int(resto // v1), int(x)
+                        total_creditos_deducidos = c1 + c2
+                        detalle_line1 = f"{c1} créditos ordinarios × ${v1:,} = ${v1*c1:,}"
+                        detalle_line2 = f"{c2} créditos extraordinarios × ${v2:,} = ${v2*c2:,}"
+                        solucion_encontrada = True
+                        break
+
+            # Caso 3: combinación con el tercer precio (si existe)
+            if not solucion_encontrada and len(valores_sorted) >= 3:
+                v1, v3 = valores_sorted[0], valores_sorted[2]
+                for x in range(min(int(costo_total_creditos / v3) + 1 if v3 > 0 else 1, 31)):
+                    resto = costo_total_creditos - v3 * x
+                    if resto >= 0 and resto % v1 == 0:
+                        c1, c3 = int(resto // v1), int(x)
+                        total_creditos_deducidos = c1 + c3
+                        detalle_line1 = f"{c1} créditos ordinarios × ${v1:,} = ${v1*c1:,}"
+                        detalle_line2 = f"{c3} créditos extraordinarios (+20%) × ${v3:,} = ${v3*c3:,}"
+                        solucion_encontrada = True
+                        break
+
             if not solucion_encontrada:
                 st.error(f"❌ No existe combinación exacta para ${costo_total_creditos:,}.")
+        # FIN DEL BLOQUE ACTUALIZADO
 
         elif len(valores_credito) >= 1 and valores_credito[0] > 0:
             v1 = valores_credito[0]
@@ -279,12 +300,12 @@ def main_app():
     """, unsafe_allow_html=True)
 
     filas = []
-    if tipo_estudio == "pregrado" and len(valores_credito) == 2:
-        v1, v2 = sorted(valores_credito)
-        filas = [("🪙 Crédito ordinario", f"${v1:,}"), ("🪙 Crédito extraordinario (+10%)", f"${v2:,}")]
-    elif tipo_estudio == "tecnologia" and len(valores_credito) == 2:
-        v1, v2 = sorted(valores_credito)
-        filas = [("🪙 Crédito ordinario", f"${v1:,}"), ("🪙 Crédito extraordinario", f"${v2:,}")]
+    if (tipo_estudio == "pregrado" or tipo_estudio == "tecnologia") and len(valores_credito) >= 2:
+        valores_sorted = sorted(valores_credito)
+        filas.append(("🪙 Crédito ordinario", f"${valores_sorted[0]:,}"))
+        filas.append(("🪙 Crédito extraordinario (+10%)", f"${valores_sorted[1]:,}"))
+        if len(valores_sorted) > 2:
+            filas.append(("🪙 Crédito extraordinario (+20%)", f"${valores_sorted[2]:,}"))
     elif len(valores_credito) >= 1:
         filas = [("🪙 Valor del crédito", f"${valores_credito[0]:,}")]
 
@@ -310,7 +331,7 @@ def main_app():
             <span style="color:#a0bdd4; font-size:11px;">UNAD · CCAV Cúcuta · Registro y Control</span>
             <span style="color:#a0bdd4; font-size:11px;">Luis Emir Guerrero Duran · Monitor</span>
             <span style="color:#C8962A; font-size:11px; font-weight:500;">2025</span>
-        </div
+        </div>
         </div>
     """, unsafe_allow_html=True)
 
