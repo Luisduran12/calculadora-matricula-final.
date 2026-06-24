@@ -34,6 +34,7 @@ VALORES_CREDITO = {
     "2026": {
         "tecnologia":      [152000, 167000],   # ordinario / especiales +10%
         "profesional":     [170000, 187000],   # ordinario / especiales +10%
+        "pregrado":        [170000, 187000, 196000, 216000],  # cuatro tarifas pregrado 2026
         "especializacion": [598000],
         "maestria":        [925000],
         "doctorado":       [1032000],
@@ -76,6 +77,7 @@ ETIQUETAS_CREDITO = {
     0: "ordinarios",
     1: "extraordinarios (+10%)",
     2: "extraordinarios (+20%)",
+    3: "extraordinarios (+27%)",
 }
 
 ETIQUETAS_TIPO = {
