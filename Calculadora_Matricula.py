@@ -200,49 +200,30 @@ def render_solucion(sol):
     total_creditos = sum(c for c, v in sol)
 
     lineas_html = "".join(
-        f"""
-        <div style="display:flex;align-items:center;
-                    background:white;border-radius:8px;padding:10px 14px;margin-bottom:6px;
-                    border:1px solid #b2dfd0;gap:10px;">
-            <div style="flex:0 0 auto;">
-                <span style="font-size:22px;font-weight:700;color:#0d2137;">{c}</span>
-                <span style="font-size:13px;color:#555;margin-left:4px;">
-                    crédito{"s" if c != 1 else ""}
-                </span>
-                <span style="font-size:12px;color:#888;margin-left:8px;">× ${v:,} c/u</span>
-            </div>
-            <div style="flex:1;text-align:center;font-size:15px;font-weight:600;color:#0F6E56;">
-                ${c*v:,}
-            </div>
-        </div>
-        """
+        f'<div style="display:flex;align-items:center;background:white;border-radius:8px;padding:10px 14px;margin-bottom:6px;border:1px solid #b2dfd0;gap:10px;">'
+        f'<div style="flex:0 0 auto;">'
+        f'<span style="font-size:22px;font-weight:700;color:#0d2137;">{c}</span>'
+        f'<span style="font-size:13px;color:#555;margin-left:4px;">crédito{"s" if c != 1 else ""}</span>'
+        f'<span style="font-size:12px;color:#888;margin-left:8px;">× ${v:,} c/u</span>'
+        f'</div>'
+        f'<div style="flex:1;text-align:center;font-size:15px;font-weight:600;color:#0F6E56;">${c*v:,}</div>'
+        f'</div>'
         for c, v in sol
     )
 
-    st.markdown(f"""
-        <div style="background:#f0faf6;border-left:4px solid #1D9E75;
-                    border-radius:0 10px 10px 0;padding:16px 20px;margin:12px 0;">
-            <div style="font-size:11px;font-weight:600;color:#085041;
-                        text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">
-                ✅ Distribución Deducida
-            </div>
-            <div style="display:flex;align-items:stretch;gap:10px;">
-                <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
-                    {lineas_html}
-                </div>
-                <div style="flex:0 0 90px;background:#0d2137;color:white;border-radius:8px;
-                            display:flex;flex-direction:column;align-items:center;
-                            justify-content:center;padding:6px;">
-                    <div style="font-size:10px;font-weight:600;letter-spacing:0.5px;
-                                text-transform:uppercase;color:#a0bdd4;text-align:center;
-                                line-height:1.2;margin-bottom:4px;">
-                        Total de<br>créditos
-                    </div>
-                    <div style="font-size:32px;font-weight:700;">{total_creditos}</div>
-                </div>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
+    html = (
+        '<div style="background:#f0faf6;border-left:4px solid #1D9E75;border-radius:0 10px 10px 0;padding:16px 20px;margin:12px 0;">'
+        '<div style="font-size:11px;font-weight:600;color:#085041;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">✅ Distribución Deducida</div>'
+        '<div style="display:flex;align-items:stretch;gap:10px;">'
+        f'<div style="flex:1;display:flex;flex-direction:column;gap:6px;">{lineas_html}</div>'
+        '<div style="flex:0 0 90px;background:#0d2137;color:white;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px;">'
+        '<div style="font-size:10px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;color:#a0bdd4;text-align:center;line-height:1.2;margin-bottom:4px;">Total de créditos</div>'
+        f'<div style="font-size:32px;font-weight:700;">{total_creditos}</div>'
+        '</div>'
+        '</div>'
+        '</div>'
+    )
+    st.markdown(html, unsafe_allow_html=True)
 
 
 # ==============================================================================
