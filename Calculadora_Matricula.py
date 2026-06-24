@@ -31,7 +31,6 @@ VALORES_CREDITO = {
     "2025":   {"pregrado": [159000, 175000], "tecnologia": [142000, 157000], "especializacion": [598000], "maestria": [925000], "homologacion": [43000]},
     "2026": {
         "tecnologia":      [152000, 167000],
-        "profesional":     [170000, 187000],
         "pregrado":        [170000, 187000, 196000, 216000],
         "especializacion": [598000],
         "maestria":        [925000],
@@ -62,7 +61,7 @@ VALORES_INSCRIPCION = {
     "2023":   {"pregrado": 162000, "especializacion": 290000, "maestria": 259000, "tecnologia": 162000, "doctorado": 0},
     "2024":   {"pregrado": 182000, "especializacion": 317000, "maestria": 290000, "tecnologia": 182000, "doctorado": 0},
     "2025":   {"pregrado": 199000, "especializacion": 0,      "maestria": 317000, "tecnologia": 199000, "doctorado": 0},
-    "2026":   {"pregrado": 245000, "profesional": 245000, "tecnologia": 245000,
+    "2026":   {"pregrado": 245000, "tecnologia": 245000,
                "especializacion": 390000, "maestria": 390000, "doctorado": 390000},
 }
 
@@ -73,7 +72,6 @@ VALOR_SEGURO = {
 
 ETIQUETAS_TIPO = {
     "tecnologia": "Tecnología",
-    "profesional": "Profesional",
     "pregrado": "Pregrado",
     "especializacion": "Especialización",
     "maestria": "Maestría",
@@ -90,6 +88,8 @@ def deducir_creditos(total, valores):
     """
     Retorna lista de soluciones ordenadas de más simple a más compleja.
     Cada solución es lista de tuplas (cantidad, valor_unitario), solo con c > 0.
+    Soporta combinaciones mixtas de varios valores distintos (ej: 3 créditos
+    de $70,000 + 4 créditos de $90,000 = $610,000).
     """
     valores_uniq = sorted(set(v for v in valores if v > 0))
     if not valores_uniq:
@@ -197,9 +197,6 @@ def fila_ref(label, valor):
 # ==============================================================================
 
 def render_solucion(sol):
-    total_creditos = sum(c for c, v in sol)
-    total_valor    = sum(c * v for c, v in sol)
-
     lineas_html = "".join(
         f"""
         <div style="display:flex;justify-content:space-between;align-items:center;
@@ -226,19 +223,6 @@ def render_solucion(sol):
                 ✅ Distribución Deducida
             </div>
             {lineas_html}
-            <div style="display:flex;justify-content:space-between;align-items:center;
-                        margin-top:12px;padding-top:10px;border-top:1px solid #9FE1CB;">
-                <span style="font-size:13px;color:#085041;font-weight:600;">
-                    Total créditos matriculados
-                </span>
-                <span style="font-size:36px;font-weight:700;color:#0d2137;">
-                    {total_creditos}
-                </span>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
-                <span style="font-size:12px;color:#555;">Verificación del valor total</span>
-                <span style="font-size:14px;font-weight:600;color:#085041;">${total_valor:,}</span>
-            </div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -275,7 +259,7 @@ def main_app():
         opciones_display = [ETIQUETAS_TIPO.get(t, t.capitalize()) for t in tipos_disponibles]
         default_idx = next(
             (i for i, t in enumerate(tipos_disponibles)
-             if t in ("tecnologia", "profesional", "pregrado")), 0
+             if t == "pregrado"), 0
         )
         tipo_display = st.selectbox(
             "Tipo de estudio", opciones_display,
