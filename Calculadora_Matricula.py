@@ -29,12 +29,11 @@ VALORES_CREDITO = {
     "2023":   {"pregrado": [123000, 135000], "tecnologia": [110000, 121000], "especializacion": [462000], "maestria": [715000], "homologacion": [35000]},
     "2024":   {"pregrado": [146000, 160000], "tecnologia": [130000, 143000], "especializacion": [462000], "maestria": [715000], "homologacion": [39000]},
     "2025":   {"pregrado": [159000, 175000], "tecnologia": [142000, 157000], "especializacion": [598000], "maestria": [925000], "homologacion": [43000]},
-    # 2026: Acuerdo 004 — Tecnología 0.087 SMLMV / Profesional 0.097 SMLMV
-    # Valores de escuelas especiales (+10%) incluidos automáticamente
     "2026": {
-        "tecnologia":      [152000, 167000],   # ordinario / especiales +10%
-        "profesional":     [170000, 187000],   # ordinario / especiales +10%
-        "pregrado":        [170000, 187000, 196000, 216000],  # cuatro tarifas pregrado 2026
+        "tecnologia":      [152000, 167000],
+        "profesional":     [170000, 187000],
+        # 4 tarifas segun escuela — el sistema detecta cual aplica segun el monto
+        "pregrado":        [170000, 187000, 196000, 216000],
         "especializacion": [598000],
         "maestria":        [925000],
         "doctorado":       [1032000],
@@ -64,20 +63,13 @@ VALORES_INSCRIPCION = {
     "2023":   {"pregrado": 162000, "especializacion": 290000, "maestria": 259000, "tecnologia": 162000, "doctorado": 0},
     "2024":   {"pregrado": 182000, "especializacion": 317000, "maestria": 290000, "tecnologia": 182000, "doctorado": 0},
     "2025":   {"pregrado": 199000, "especializacion": 0,      "maestria": 317000, "tecnologia": 199000, "doctorado": 0},
-    "2026":   {"pregrado": 245000, "profesional": 245000,     "tecnologia": 245000,
+    "2026":   {"pregrado": 245000, "profesional": 245000, "tecnologia": 245000,
                "especializacion": 390000, "maestria": 390000, "doctorado": 390000},
 }
 
 VALOR_SEGURO = {
     "2026": 10000,
     "default": 9000,
-}
-
-ETIQUETAS_CREDITO = {
-    0: "ordinarios",
-    1: "extraordinarios (+10%)",
-    2: "extraordinarios (+20%)",
-    3: "extraordinarios (+27%)",
 }
 
 ETIQUETAS_TIPO = {
@@ -91,47 +83,50 @@ ETIQUETAS_TIPO = {
 }
 
 # ==============================================================================
-# 2) LÓGICA DE DEDUCCIÓN — busca TODAS las combinaciones posibles
-#    Devuelve lista de soluciones: cada una es lista de (cantidad, valor, etiqueta)
+# 2) LÓGICA DE DEDUCCIÓN
+#    Busca TODAS las combinaciones (c0,c1,...) tal que sum(ci*vi)==total
+#    Prioriza soluciones con UN SOLO tipo de tarifa (más probables en la práctica)
 # ==============================================================================
 
 def deducir_creditos(total, valores):
     """
-    Dado un total y una lista de valores de crédito (ordenados de menor a mayor),
-    encuentra todas las combinaciones no negativas (c0, c1, ...) tales que
-    sum(ci * vi) == total, con ci >= 0 enteros.
-    Retorna lista de soluciones, cada solución es lista de tuplas (ci, vi, etiqueta).
-    Limita búsqueda a máx 120 créditos por tipo para eficiencia.
+    Retorna lista de soluciones ordenadas de más simple a más compleja.
+    Cada solución es lista de tuplas (cantidad, valor_unitario).
+    Solo incluye filas con cantidad > 0.
     """
-    valores = sorted(set(v for v in valores if v > 0))
-    if not valores:
+    valores_uniq = sorted(set(v for v in valores if v > 0))
+    if not valores_uniq:
         return []
 
     soluciones = []
-    MAX = 120
+    MAX = 150  # máximo créditos por tarifa (suficiente para cualquier caso real)
 
     def buscar(idx, restante, acumulado):
-        if idx == len(valores) - 1:
-            v = valores[idx]
-            if restante % v == 0:
+        if idx == len(valores_uniq) - 1:
+            v = valores_uniq[idx]
+            if v > 0 and restante % v == 0:
                 c = restante // v
-                if c <= MAX:
-                    sol = acumulado + [(c, v, ETIQUETAS_CREDITO.get(idx, f"tipo {idx+1}"))]
-                    # Filtrar filas con 0 créditos
-                    sol_limpia = [(c, v, e) for c, v, e in sol if c > 0]
-                    if sol_limpia:
-                        soluciones.append(sol_limpia)
+                if 0 < c <= MAX:
+                    sol = acumulado + [(c, v)]
+                    soluciones.append(sol)
             return
-        v = valores[idx]
+        v = valores_uniq[idx]
         max_c = min(restante // v, MAX)
         for c in range(max_c + 1):
-            buscar(idx + 1, restante - c * v,
-                   acumulado + [(c, v, ETIQUETAS_CREDITO.get(idx, f"tipo {idx+1}"))])
+            nuevo_restante = restante - c * v
+            nueva_acum = acumulado + [(c, v)] if c > 0 else acumulado
+            buscar(idx + 1, nuevo_restante, nueva_acum)
 
     buscar(0, total, [])
-    # Ordenar: primero las soluciones con menos tipos distintos (más simples)
-    soluciones.sort(key=lambda s: (len(s), -sum(c for c, v, e in s)))
+
+    # Ordenar: menos tarifas distintas → más créditos totales → monto
+    soluciones.sort(key=lambda s: (
+        len(s),
+        -sum(c for c, v in s),
+        sum(c * v for c, v in s)
+    ))
     return soluciones
+
 
 # ==============================================================================
 # 3) UTILIDADES UI
@@ -148,15 +143,22 @@ def apply_custom_css():
         <style>
         .block-container { max-width: 720px; margin: auto; padding-top: 1rem; }
         input[type="number"] {
-            font-size: 20px !important; padding: 10px !important;
+            font-size: 20px !important;
+            padding: 10px !important;
             text-align: center;
-            border: 2px solid #C8962A !important; border-radius: 10px !important;
+            border: 2px solid #C8962A !important;
+            border-radius: 10px !important;
         }
         .stButton > button {
-            background-color: #0d2137 !important; color: white !important;
-            font-size: 16px !important; font-weight: 500 !important;
-            border-radius: 10px !important; border: none !important;
-            padding: 12px 24px !important; width: 100% !important; margin-top: 5px;
+            background-color: #0d2137 !important;
+            color: white !important;
+            font-size: 16px !important;
+            font-weight: 500 !important;
+            border-radius: 10px !important;
+            border: none !important;
+            padding: 12px 24px !important;
+            width: 100% !important;
+            margin-top: 5px;
         }
         .stButton > button:hover { background-color: #1a3a5c !important; }
         </style>
@@ -165,7 +167,7 @@ def apply_custom_css():
 def mostrar_encabezado():
     unad_b64   = img_to_base64("unad.png")
     edunat_b64 = img_to_base64("edunat.png")
-    unad_tag   = f'<img src="data:image/png;base64,{unad_b64}"   style="height:clamp(50px,8vw,80px);object-fit:contain;">' if unad_b64   else ""
+    unad_tag   = f'<img src="data:image/png;base64,{unad_b64}"   style="height:clamp(50px,8vw,80px);object-fit:contain;">' if unad_b64 else ""
     edunat_tag = f'<img src="data:image/png;base64,{edunat_b64}" style="height:clamp(50px,8vw,80px);object-fit:contain;">' if edunat_b64 else ""
     st.markdown(f"""
         <div style="background:#0d2137;border-radius:14px 14px 0 0;padding:20px 28px 16px;">
@@ -198,7 +200,58 @@ def fila_ref(label, valor):
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 4) APLICACIÓN PRINCIPAL
+# 4) RENDER DE RESULTADO
+# ==============================================================================
+
+def render_solucion(sol):
+    total_creditos = sum(c for c, v in sol)
+    total_valor    = sum(c * v for c, v in sol)
+
+    lineas_html = "".join(
+        f"""
+        <div style="display:flex;justify-content:space-between;align-items:center;
+                    background:white;border-radius:8px;padding:10px 14px;margin-bottom:6px;
+                    border:1px solid #b2dfd0;">
+            <div>
+                <span style="font-size:22px;font-weight:700;color:#0d2137;">{c}</span>
+                <span style="font-size:13px;color:#555;margin-left:4px;">
+                    crédito{"s" if c != 1 else ""}
+                </span>
+                <span style="font-size:12px;color:#888;margin-left:8px;">× ${v:,} c/u</span>
+            </div>
+            <div style="font-size:15px;font-weight:600;color:#0F6E56;">${c*v:,}</div>
+        </div>
+        """
+        for c, v in sol
+    )
+
+    st.markdown(f"""
+        <div style="background:#f0faf6;border-left:4px solid #1D9E75;
+                    border-radius:0 10px 10px 0;padding:16px 20px;margin:12px 0;">
+            <div style="font-size:11px;font-weight:600;color:#085041;
+                        text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">
+                ✅ Distribución Deducida
+            </div>
+            {lineas_html}
+            <div style="display:flex;justify-content:space-between;align-items:center;
+                        margin-top:12px;padding-top:10px;border-top:1px solid #9FE1CB;">
+                <span style="font-size:13px;color:#085041;font-weight:600;">
+                    Total créditos matriculados
+                </span>
+                <span style="font-size:36px;font-weight:700;color:#0d2137;">
+                    {total_creditos}
+                </span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+                <span style="font-size:12px;color:#555;">Verificación del valor total</span>
+                <span style="font-size:14px;font-weight:600;color:#085041;">${total_valor:,}</span>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+
+# ==============================================================================
+# 5) APLICACIÓN PRINCIPAL
 # ==============================================================================
 
 def main_app():
@@ -231,13 +284,15 @@ def main_app():
             (i for i, t in enumerate(tipos_disponibles)
              if t in ("tecnologia", "profesional", "pregrado")), 0
         )
-        tipo_display = st.selectbox("Tipo de estudio", opciones_display,
-                                    index=default_idx, key=f"tipo_{ano}")
+        tipo_display = st.selectbox(
+            "Tipo de estudio", opciones_display,
+            index=default_idx, key=f"tipo_{ano}"
+        )
         tipo = tipos_disponibles[opciones_display.index(tipo_display)]
 
-    valores_credito = sorted(set(v for v in valores_ano.get(tipo, []) if v > 0))
+    valores_credito   = sorted(set(v for v in valores_ano.get(tipo, []) if v > 0))
     valor_inscripcion = VALORES_INSCRIPCION.get(ano, {}).get(tipo, 0)
-    valor_seguro = VALOR_SEGURO.get(ano, VALOR_SEGURO["default"])
+    valor_seguro      = VALOR_SEGURO.get(ano, VALOR_SEGURO["default"])
 
     st.markdown("---")
     presiono = st.button("🔍 Deducir Distribución de Créditos")
@@ -252,7 +307,6 @@ def main_app():
             soluciones = deducir_creditos(valor_neto, valores_credito)
 
             if not soluciones:
-                # Mostrar con qué valores se intentó para ayudar al usuario
                 vals_fmt = " / ".join(f"${v:,}" for v in valores_credito)
                 st.error(
                     f"❌ **No existe combinación exacta** para **${valor_neto:,}** "
@@ -260,53 +314,22 @@ def main_app():
                     f"Verifique que el monto ingresado corresponda solo a créditos académicos."
                 )
             else:
-                # Tomar la solución más simple (menos filas distintas)
-                sol = soluciones[0]
-                total_creditos = sum(c for c, v, e in sol)
+                # Solución principal (más simple y probable)
+                render_solucion(soluciones[0])
 
-                # Construir líneas de detalle
-                lineas_html = "".join(
-                    f'<div style="font-size:14px;color:#0F6E56;margin-bottom:4px;">'
-                    f'<b>{c}</b> crédito{"s" if c!=1 else ""} {e} × ${v:,} = <b>${c*v:,}</b></div>'
-                    for c, v, e in sol
-                )
-
-                st.markdown(f"""
-                    <div style="background:#f0faf6;border-left:4px solid #1D9E75;
-                                border-radius:0 10px 10px 0;padding:16px 20px;margin:12px 0;
-                                display:flex;justify-content:space-between;align-items:center;">
-                        <div style="flex:1;">
-                            <div style="font-size:11px;font-weight:600;color:#085041;
-                                        text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
-                                ✅ Distribución Deducida
-                            </div>
-                            {lineas_html}
-                        </div>
-                        <div style="text-align:center;padding-left:24px;border-left:1px solid #9FE1CB;
-                                    min-width:80px;">
-                            <div style="font-size:11px;color:#085041;text-transform:uppercase;
-                                        letter-spacing:1px;">Total</div>
-                            <div style="font-size:48px;font-weight:600;color:#0d2137;line-height:1;">
-                                {total_creditos}
-                            </div>
-                            <div style="font-size:11px;color:#085041;">créditos</div>
-                        </div>
-                    </div>
-                """, unsafe_allow_html=True)
-
-                # Si hay múltiples soluciones, mostrarlas como alternativas
+                # Alternativas
                 if len(soluciones) > 1:
-                    with st.expander(f"Ver {len(soluciones)-1} combinación(es) alternativa(s)"):
+                    with st.expander(f"🔄 Ver {len(soluciones) - 1} combinación(es) alternativa(s)"):
                         for i, sol_alt in enumerate(soluciones[1:], 2):
-                            total_alt = sum(c for c, v, e in sol_alt)
-                            lineas_alt = " | ".join(
-                                f"{c} × ${v:,} ({e})" for c, v, e in sol_alt
+                            total_alt = sum(c for c, v in sol_alt)
+                            lineas_alt = "  +  ".join(
+                                f"**{c}** × ${v:,}" for c, v in sol_alt
                             )
                             st.markdown(
-                                f"**Opción {i}** ({total_alt} créditos): {lineas_alt}"
+                                f"**Opción {i}** — {total_alt} créditos total: {lineas_alt}"
                             )
 
-                st.markdown("---")
+            st.markdown("---")
 
     # ── Costo Neto ────────────────────────────────────────────────────────────
     st.markdown(f"""
@@ -314,7 +337,7 @@ def main_app():
                     border-radius:0 10px 10px 0;padding:14px 20px;margin:12px 0;
                     display:flex;justify-content:space-between;align-items:center;">
             <div style="font-size:11px;font-weight:600;color:#854F0B;
-                        text-transform:uppercase;letter-spacing:1px;">Costo Neto Total de Créditos</div>
+                        text-transform:uppercase;letter-spacing:1px;">Valor Neto Ingresado (Créditos)</div>
             <div style="font-size:26px;font-weight:500;color:#633806;">${valor_neto:,}</div>
         </div>
     """, unsafe_allow_html=True)
@@ -333,31 +356,14 @@ def main_app():
             <div style="padding:14px 16px;">
     """, unsafe_allow_html=True)
 
-    for idx, v in enumerate(valores_credito):
-        etiqueta = ETIQUETAS_CREDITO.get(idx, f"Tipo {idx+1}")
-        fila_ref(f"🪙 Crédito {etiqueta}", f"${v:,}")
+    for v in valores_credito:
+        fila_ref(f"🪙 Valor por crédito", f"${v:,}")
 
     if valor_inscripcion > 0:
         fila_ref("📄 Inscripción", f"${valor_inscripcion:,}")
     fila_ref("🛡 Seguro estudiantil", f"${valor_seguro:,}")
 
     st.markdown("</div></div>", unsafe_allow_html=True)
-
-    # ── Nota informativa 2026 escuelas especiales ─────────────────────────────
-    if ano == "2026" and tipo in ("tecnologia", "profesional"):
-        v_ord = valores_credito[0]
-        v_esp = valores_credito[1] if len(valores_credito) > 1 else None
-        nota = (
-            f"ℹ️ La calculadora detecta automáticamente la combinación de créditos. "
-            f"El valor **${v_ord:,}** corresponde a créditos ordinarios y "
-        )
-        if v_esp:
-            nota += (
-                f"**${v_esp:,}** a créditos de Escuelas Especiales "
-                f"(Ciencias de la Salud, Ciencias Básicas, Ingeniería, Tecnología y Ciencias Agrícolas). "
-                f"No es necesario indicar la escuela — el sistema deduce la distribución del monto ingresado."
-            )
-        st.info(nota)
 
     # ── Footer ────────────────────────────────────────────────────────────────
     st.markdown("""
@@ -372,7 +378,7 @@ def main_app():
 
 
 # ==============================================================================
-# 5) PUNTO DE ENTRADA
+# 6) PUNTO DE ENTRADA
 # ==============================================================================
 apply_custom_css()
 main_app()
