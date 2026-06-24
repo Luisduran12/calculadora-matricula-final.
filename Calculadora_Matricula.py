@@ -3,7 +3,7 @@ import base64
 import os
 
 # ==============================================================================
-# 1) DATOS DE CONFIGURACIÓN - VALORES OFICIALES 2026
+# 1) DATOS DE CONFIGURACIÓN - VALORES OFICIALES
 # ==============================================================================
 
 VALORES_CREDITO = {
@@ -32,7 +32,6 @@ VALORES_CREDITO = {
     "2026": {
         "tecnologia":      [152000, 167000],
         "profesional":     [170000, 187000],
-        # 4 tarifas segun escuela — el sistema detecta cual aplica segun el monto
         "pregrado":        [170000, 187000, 196000, 216000],
         "especializacion": [598000],
         "maestria":        [925000],
@@ -83,43 +82,37 @@ ETIQUETAS_TIPO = {
 }
 
 # ==============================================================================
-# 2) LÓGICA DE DEDUCCIÓN
-#    Busca TODAS las combinaciones (c0,c1,...) tal que sum(ci*vi)==total
-#    Prioriza soluciones con UN SOLO tipo de tarifa (más probables en la práctica)
+# 2) LÓGICA DE DEDUCCIÓN — CORREGIDA
+#    Encuentra todas las combinaciones (c0,c1,...) tal que sum(ci*vi) == total
 # ==============================================================================
 
 def deducir_creditos(total, valores):
     """
     Retorna lista de soluciones ordenadas de más simple a más compleja.
-    Cada solución es lista de tuplas (cantidad, valor_unitario).
-    Solo incluye filas con cantidad > 0.
+    Cada solución es lista de tuplas (cantidad, valor_unitario), solo con c > 0.
     """
     valores_uniq = sorted(set(v for v in valores if v > 0))
     if not valores_uniq:
         return []
 
+    MAX = 150
     soluciones = []
-    MAX = 150  # máximo créditos por tarifa (suficiente para cualquier caso real)
 
-    def buscar(idx, restante, acumulado):
-        if idx == len(valores_uniq) - 1:
-            v = valores_uniq[idx]
-            if v > 0 and restante % v == 0:
-                c = restante // v
-                if 0 < c <= MAX:
-                    sol = acumulado + [(c, v)]
-                    soluciones.append(sol)
+    def buscar(vals_restantes, restante, acumulado):
+        if not vals_restantes:
+            if restante == 0 and acumulado:
+                soluciones.append(list(acumulado))
             return
-        v = valores_uniq[idx]
+        v = vals_restantes[0]
+        resto_vals = vals_restantes[1:]
         max_c = min(restante // v, MAX)
-        for c in range(max_c + 1):
-            nuevo_restante = restante - c * v
+        for c in range(0, max_c + 1):
             nueva_acum = acumulado + [(c, v)] if c > 0 else acumulado
-            buscar(idx + 1, nuevo_restante, nueva_acum)
+            buscar(resto_vals, restante - c * v, nueva_acum)
 
-    buscar(0, total, [])
+    buscar(valores_uniq, total, [])
 
-    # Ordenar: menos tarifas distintas → más créditos totales → monto
+    # Ordenar: menos tarifas distintas → más créditos totales → menor monto total
     soluciones.sort(key=lambda s: (
         len(s),
         -sum(c for c, v in s),
@@ -314,10 +307,8 @@ def main_app():
                     f"Verifique que el monto ingresado corresponda solo a créditos académicos."
                 )
             else:
-                # Solución principal (más simple y probable)
                 render_solucion(soluciones[0])
 
-                # Alternativas
                 if len(soluciones) > 1:
                     with st.expander(f"🔄 Ver {len(soluciones) - 1} combinación(es) alternativa(s)"):
                         for i, sol_alt in enumerate(soluciones[1:], 2):
@@ -357,7 +348,7 @@ def main_app():
     """, unsafe_allow_html=True)
 
     for v in valores_credito:
-        fila_ref(f"🪙 Valor por crédito", f"${v:,}")
+        fila_ref("🪙 Valor por crédito", f"${v:,}")
 
     if valor_inscripcion > 0:
         fila_ref("📄 Inscripción", f"${valor_inscripcion:,}")
